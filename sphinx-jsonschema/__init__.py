@@ -15,9 +15,9 @@
 
 import os.path
 import json
-from jsonpointer import resolve_pointer
+from jsonpointer import resolve_pointer, JsonPointer, JsonPointerException
 import yaml
-from collections import OrderedDict
+from collections import OrderedDict, Sequence, Mapping, MutableSequence, MutableMapping
 
 from docutils.parsers.rst import Directive
 from .wide_format import WideFormat
@@ -28,6 +28,10 @@ _glob_app = None
 class JsonSchema(Directive):
     optional_arguments = 1
     has_content = True
+    option_spec = {
+        'hide': str,
+        'show': str
+    }
 
     def __init__(self, directive, arguments, options, content, lineno, content_offset, block_text, state, state_machine):
         assert directive == 'jsonschema'
@@ -47,6 +51,50 @@ class JsonSchema(Directive):
                 self.schema = resolve_pointer(self.schema, pointer)
         else:
             self._load_internal(content)
+
+        hidden_paths = self.options.get('hide')
+        if hidden_paths is not None:
+            orig_schema = json.loads(json.dumps(self.schema))
+
+            for hidden_path in hidden_paths.split(' '):
+                ptr = JsonPointer(hidden_path)
+                parent, name = ptr.to_last(self.schema)
+                del parent[name]
+
+            shown_paths = self.options.get('show')
+
+            for shown_path in shown_paths.split(' '):
+                ptr = JsonPointer(shown_path)
+
+                orig_parent = orig_schema
+                current_parent = self.schema
+
+                for part in ptr.parts[:-1]:
+                    orig_parent = ptr.walk(orig_parent, part)
+
+                    try:
+                        current_parent = ptr.walk(current_parent, part)
+                    except JsonPointerException:
+                        if isinstance(orig_parent, Sequence):
+                            new_entry = []
+                        elif isinstance(orig_parent, Mapping):
+                            new_entry = OrderedDict()
+                        else:
+                            raise Exception('Unsupported type parent')
+
+                        if isinstance(current_parent, MutableSequence):
+                            current_parent.append(new_entry)
+                        elif isinstance(current_parent, MutableMapping):
+                            current_parent[part] = new_entry
+
+                        current_parent = new_entry
+
+                if isinstance(current_parent, MutableSequence):
+                    current_parent.append(ptr.resolve(orig_schema))
+                elif isinstance(current_parent, MutableMapping):
+                    current_parent[ptr.parts[-1]] = ptr.resolve(orig_schema)
+                else:
+                    raise Exception('Unsupported type parent')
 
     def run(self):
         format = WideFormat(self.state, self.lineno, _glob_app)

@@ -44,6 +44,14 @@ notation to display a subschema:
 
     .. jsonschema:: schemas/sample.json#/definitions/sample
 
+And with the show/hide options you can hide some parts of the document:
+
+.. code-block:: rst
+
+    .. jsonschema:: http://example.com/project/schema.json
+       :hide: /definitions/sample /definitions/othersample
+       :show: /definitions/sample/description /properties/sample/properties
+
 Alternatively you can embed the schema directly into your documentation:
 
 .. code-block:: rst
@@ -114,6 +122,82 @@ which renders:
             "definitions1": {"$ref" : "#/definitions/bind"},
             "definitions3": {"$ref" : "#/locbind"}
         },
+        "date": {
+            "title": "Date",
+            "$$target": ["#/date"],
+            "description": "YYYY-MM-DD",
+            "type": "string"
+        }
+    }
+
+By using the hide/show options it is possible to show only some parts of the schema:
+
+.. clode-block:: rst
+
+    .. jsonschema::
+       :hide: #/properties
+       :show: #/properties/startdate #/properties/enddate
+
+        {
+            "title" : "supertitle1",
+            "type": "object",
+            "properties": {
+                "startdate": {"$ref": "#/date"},
+                "enddate": {"$ref": "#/date"},
+                "manualdate_to1": {"$ref" : "#/manualdate"},
+                "definitions1": {"$ref" : "#/definitions/bind"},
+                "definitions3": {"$ref" : "#/locbind"}
+            },
+            "date": {
+                "title": "Date",
+                "$$target": ["#/date"],
+                "description": "YYYY-MM-DD",
+                "type": "string"
+            }
+        }
+
+which renders:
+
+.. jsonschema::
+   :hide: /properties
+   :show: /properties/startdate /properties/enddate
+
+    {
+        "title" : "supertitle1",
+        "type": "object",
+        "properties": {
+            "startdate": {"$ref": "#/date"},
+            "enddate": {"$ref": "#/date"},
+            "manualdate_to1": {"$ref" : "#/manualdate"},
+            "definitions1": {"$ref" : "#/definitions/bind"},
+            "definitions3": {"$ref" : "#/locbind"}
+        },
+        "date": {
+            "title": "Date",
+            "$$target": ["#/date"],
+            "description": "YYYY-MM-DD",
+            "type": "string"
+        }
+    }
+
+.. jsonschema::
+   :hide: /option1
+   :show: /option1/0 /option1/1/0/document2
+
+    {
+        "title" : "supertitle1",
+        "type": "object",
+        "properties": {
+            "startdate": {"$ref": "#/date"},
+            "enddate": {"$ref": "#/date"},
+            "manualdate_to1": {"$ref" : "#/manualdate"},
+            "definitions1": {"$ref" : "#/definitions/bind"},
+            "definitions3": {"$ref" : "#/locbind"}
+        },
+        "option1": [
+            [ { "document": 1}, {"document": 2} ],
+            [ { "document2": 1}, {"document2": 2} ]
+        ],
         "date": {
             "title": "Date",
             "$$target": ["#/date"],

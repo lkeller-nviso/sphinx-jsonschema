@@ -67,6 +67,14 @@ With all three of the above you may add JSON Pointer notation to display a subsc
     .. jsonschema:: /home/leo/src/jsonschema/sample.json#/path/to/schema
     .. jsonschema:: jsonschema/sample.json#/path/to/schema
     
+
+And with the show/hide options you can hide some parts of the document::
+
+    .. jsonschema:: http://example.com/project/schema.json
+       :hide: /definitions/sample /definitions/othersample
+       :show: /definitions/sample/description /properties/sample/properties
+
+
 Alternatively you can embed the schema::
 
     .. jsonschema::
