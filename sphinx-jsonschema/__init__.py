@@ -20,10 +20,11 @@ import yaml
 from collections import OrderedDict, Sequence, Mapping, MutableSequence, MutableMapping
 
 from docutils.parsers.rst import Directive
-from .wide_format import WideFormat
+from .nested_format import NestedFormat
 
 # TODO find out if app is accessible in some other way
 _glob_app = None
+
 
 class JsonSchema(Directive):
     optional_arguments = 1
@@ -97,7 +98,7 @@ class JsonSchema(Directive):
                     raise Exception('Unsupported type parent')
 
     def run(self):
-        format = WideFormat(self.state, self.lineno, _glob_app)
+        format = NestedFormat(self.state, self.lineno, _glob_app)
         return format.transform(self.schema)
 
     def _load_external(self, file_or_url):
@@ -160,4 +161,5 @@ def setup(app):
     global _glob_app
     _glob_app = app
     app.add_directive('jsonschema', JsonSchema)
+
     return {'version': '1.8'}
