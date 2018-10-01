@@ -98,6 +98,7 @@ class JsonSchema(Directive):
                     raise Exception('Unsupported type parent')
 
     def run(self):
+        _glob_app.env.config.html_static_path.append(os.path.join(os.path.dirname(__file__), 'static'))
         format = NestedFormat(self.state, self.lineno, _glob_app)
         return format.transform(self.schema)
 
@@ -161,5 +162,8 @@ def setup(app):
     global _glob_app
     _glob_app = app
     app.add_directive('jsonschema', JsonSchema)
+
+    app.add_stylesheet('jsonschema.css')
+    app.add_javascript('jsonschema.js')
 
     return {'version': '1.8'}
